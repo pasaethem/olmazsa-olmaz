@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c8f55a">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Olmazsa Olmaz</title>
@@ -891,5 +893,5 @@ function resetAll(){ S={level:1,streak:0,best:1,games:0,checkpoint:1}; save(); u
 
 updateHome();
 </script>
-</body>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js")}</script></body>
 </html>
