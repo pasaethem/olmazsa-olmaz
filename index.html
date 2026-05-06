@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olmazsa Olmaz</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #18181f;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.15);
+  --accent: #c8f55a;
+  --accent-dim: rgba(200,245,90,0.12);
+  --accent-glow: rgba(200,245,90,0.25);
+  --text: #f0f0f0;
+  --text-muted: rgba(240,240,240,0.45);
+  --text-dim: rgba(240,240,240,0.25);
+  --red: #ff4d6d;
+  --red-dim: rgba(255,77,109,0.12);
+  --green: #c8f55a;
+  --tier1: #c8f55a;
+  --tier2: #ffd166;
+  --tier3: #f4845f;
+  --tier4: #e63946;
+  --tier5: #9b72cf;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* SCREENS */
+.screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ===================== HOME ===================== */
+#home {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.home-bg-dot {
+  position: fixed;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,245,90,0.08) 0%, transparent 70%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+
+.home-inner {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px; height: 72px;
+  border: 1px solid var(--accent);
+  border-radius: 18px;
+  margin-bottom: 2rem;
+  position: relative;
+}
+.logo-mark::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+}
+.logo-mark span {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--accent);
+  position: relative;
+  z-index: 1;
+}
+
+.home-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.05;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+.home-title .highlight {
+  color: var(--accent);
+}
+
+.home-sub {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 2.5rem;
+}
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 12px;
+}
+.stat-box .val {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+}
+.stat-box .lbl {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: block;
+}
+
+.btn-play {
+  width: 100%;
+  padding: 18px;
+  background: var(--accent);
+  color: #0a0a0f;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s, opacity 0.15s;
+  margin-bottom: 12px;
+}
+.btn-play:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-play:active { transform: scale(0.98); }
+
+.btn-reset {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  padding: 8px;
+}
+.btn-reset:hover { color: var(--text-muted); }
+
+.tier-preview {
+  margin-top: 2.5rem;
+  text-align: left;
+}
+.tier-preview-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.tier-list { display: flex; flex-direction: column; gap: 6px; }
+.tier-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.tier-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tier-name { color: var(--text-muted); flex: 1; }
+.tier-range { font-family: 'Syne', sans-serif; font-size: 12px; color: var(--text-dim); }
+
+/* ===================== GAME ===================== */
+#game {
+  padding: 0;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.level-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.level-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+}
+.level-total {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.tier-label {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.streak-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.streak-count {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent);
+}
+
+/* PROGRESS BAR */
+.progress-wrap {
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  position: relative;
+  flex-shrink: 0;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* GAME BODY */
+.game-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 2rem;
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  gap: 0;
+}
+
+.cat-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  align-self: flex-start;
+}
+
+.q-type-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  align-self: flex-start;
+}
+
+.question-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  margin-bottom: 36px;
+  align-self: flex-start;
+  color: var(--text);
+}
+
+.choices-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.choices-grid.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.choice-btn {
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  line-height: 1.4;
+  position: relative;
+  overflow: hidden;
+}
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+@media (hover: hover) {
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .choice-btn:hover:not(:disabled)::before { opacity: 0.06; }
+}
+.choice-btn:disabled { cursor: default; }
+.choice-btn.correct {
+  border-color: var(--accent);
+  background: rgba(200,245,90,0.1);
+  color: var(--accent);
+}
+.choice-btn.wrong {
+  border-color: var(--red);
+  background: rgba(255,77,109,0.1);
+  color: var(--red);
+}
+.choice-btn .choice-index {
+  display: inline-block;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+  text-align: center;
+  line-height: 22px;
+  font-size: 11px;
+  margin-right: 10px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+}
+
+.feedback-box {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  width: 100%;
+  display: none;
+}
+.feedback-box.correct {
+  background: rgba(200,245,90,0.08);
+  border: 1px solid rgba(200,245,90,0.25);
+  color: #c8f55a;
+  display: block;
+}
+.feedback-box.wrong {
+  background: rgba(255,77,109,0.08);
+  border: 1px solid rgba(255,77,109,0.25);
+  color: #ff8fa3;
+  display: block;
+}
+.feedback-box .fb-icon {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* ===================== AD SCREEN ===================== */
+#ad-screen, #ad2-screen {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.ad-card {
+  max-width: 440px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.ad-wrong-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--red-dim);
+  border: 1px solid rgba(255,77,109,0.3);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 22px;
+}
+
+.ad-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ad-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.ad-box-inner {
+  background: var(--surface2);
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.ad-box-inner::before {
+  content: 'REKLAM';
+  position: absolute;
+  top: 8px; right: 12px;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.ad-timer-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--text);
+  display: block;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.ad-timer-label { font-size: 12px; color: var(--text-muted); }
+
+.ad-pbar {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+.ad-pbar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  width: 0%;
+  transition: width 1s linear;
+}
+
+.ad-actions { display: flex; flex-direction: column; gap: 10px; }
+
+.btn-ad-restart {
+  padding: 15px;
+  background: none;
+  border: 1px solid rgba(255,77,109,0.35);
+  color: var(--red);
+  border-radius: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ad-restart:hover:not(:disabled) { background: var(--red-dim); }
+.btn-ad-restart:disabled { opacity: 0.3; cursor: default; }
+
+.btn-ad-continue {
+  padding: 15px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(200,245,90,0.3);
+  color: var(--accent);
+  border-radius: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ad-continue:hover:not(:disabled) { background: rgba(200,245,90,0.18); }
+.btn-ad-continue:disabled { opacity: 0.3; cursor: default; }
+
+/* ===================== WIN ===================== */
+#win-screen {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+.win-card {
+  max-width: 440px;
+  width: 100%;
+}
+.win-glow {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 2rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  position: relative;
+}
+.win-glow::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+}
+.win-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.win-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6; }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(16px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.anim { animation: fadeUp 0.35s ease both; }
+.anim-d1 { animation-delay: 0.05s; }
+.anim-d2 { animation-delay: 0.12s; }
+.anim-d3 { animation-delay: 0.2s; }
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(200,245,90,0.3); }
+  70%  { box-shadow: 0 0 0 14px rgba(200,245,90,0); }
+  100% { box-shadow: 0 0 0 0 rgba(200,245,90,0); }
+}
+.pulse { animation: pulse-ring 1.8s ease infinite; }
+</style>
+</head>
+<body>
+
+<!-- ===================== HOME ===================== -->
+<div class="screen active" id="home">
+  <div class="home-bg-dot"></div>
+  <div class="home-inner">
+    <div class="logo-mark anim"><span>OO</span></div>
+    <h1 class="home-title anim anim-d1">Olmazsa<br><span class="highlight">Olmaz</span></h1>
+    <p class="home-sub anim anim-d2">100 bölüm · kolaydan inanılmaz zora<br>Ne kadar biliyorsun? Yanlış bil, reklam izle.</p>
+
+    <div class="stats-row anim anim-d3">
+      <div class="stat-box">
+        <span class="val" id="h-best">1</span>
+        <span class="lbl">En yüksek bölüm</span>
+      </div>
+      <div class="stat-box">
+        <span class="val" id="h-games">0</span>
+        <span class="lbl">Toplam oyun</span>
+      </div>
+      <div class="stat-box">
+        <span class="val" id="h-cur">1</span>
+        <span class="lbl">Mevcut bölüm</span>
+      </div>
+    </div>
+
+    <button class="btn-play anim anim-d3" onclick="startGame()">Oynamaya Başla</button>
+    <button class="btn-reset" onclick="resetAll()">Sıfırla</button>
+
+    <div class="tier-preview anim anim-d3">
+      <div class="tier-preview-title">Bölüm haritası</div>
+      <div class="tier-list">
+        <div class="tier-item"><div class="tier-dot" style="background:#c8f55a;"></div><span class="tier-name">Kolay — Günlük hayat</span><span class="tier-range">1–10</span></div>
+        <div class="tier-item"><div class="tier-dot" style="background:#ffd166;"></div><span class="tier-name">Orta — Genel kültür</span><span class="tier-range">11–30</span></div>
+        <div class="tier-item"><div class="tier-dot" style="background:#f4845f;"></div><span class="tier-name">Zor — Meslek bilgisi</span><span class="tier-range">31–60</span></div>
+        <div class="tier-item"><div class="tier-dot" style="background:#e63946;"></div><span class="tier-name">Uzman — Akademik</span><span class="tier-range">61–85</span></div>
+        <div class="tier-item"><div class="tier-dot" style="background:#9b72cf;"></div><span class="tier-name">Efsane — Doktora seviyesi</span><span class="tier-range">86–100</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== GAME ===================== -->
+<div class="screen" id="game">
+  <div class="game-header">
+    <div class="level-pill">
+      <span class="level-num" id="g-lvl">1</span>
+      <span class="level-total">/100</span>
+    </div>
+    <span class="tier-label" id="g-tier-badge">Kolay</span>
+    <div class="streak-display">
+      <span>Seri</span>
+      <span class="streak-count" id="g-streak">0</span>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-fill" id="g-progress" style="width:1%;"></div>
+  </div>
+
+  <div class="game-body">
+    <div class="cat-label" id="g-cat">Evde Olmazsa Olmaz</div>
+    <div class="q-type-badge" id="g-qtype">2 seçenek</div>
+    <div class="question-text" id="g-question">Soru yükleniyor...</div>
+    <div class="choices-grid" id="g-choices"></div>
+    <div class="feedback-box" id="g-feedback"></div>
+  </div>
+</div>
+
+<!-- ===================== AD 1 ===================== -->
+<div class="screen" id="ad-screen">
+  <div class="ad-card">
+    <div class="ad-wrong-icon">✕</div>
+    <div class="ad-title">Yanlış Cevap</div>
+    <div class="ad-sub" id="ad-msg">15. bölümde elendin.</div>
+
+    <div class="ad-box-inner">
+      <span class="ad-timer-num" id="ad-t">5</span>
+      <div class="ad-timer-label">saniye kaldı</div>
+      <div class="ad-pbar"><div class="ad-pbar-fill" id="ad-bar"></div></div>
+    </div>
+
+    <div class="ad-actions">
+      <button class="btn-ad-restart" id="btn-restart" disabled onclick="doRestart()">Başa dön (1 reklam izlendi)</button>
+      <button class="btn-ad-continue" id="btn-continue" disabled onclick="goAd2()">Kaldığım yerden devam et (1 reklam daha izle)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AD 2 ===================== -->
+<div class="screen" id="ad2-screen">
+  <div class="ad-card">
+    <div class="ad-title" style="margin-bottom:8px;">2. Reklam</div>
+    <div class="ad-sub">İzlendikten sonra kaldığın bölümden devam edeceksin.</div>
+    <div class="ad-box-inner">
+      <span class="ad-timer-num" id="ad2-t">5</span>
+      <div class="ad-timer-label">saniye kaldı</div>
+      <div class="ad-pbar"><div class="ad-pbar-fill" id="ad2-bar" style="background:#c8f55a;"></div></div>
+    </div>
+    <button class="btn-ad-continue" id="btn-ad2-done" disabled onclick="continueFromCheckpoint()" style="margin-top:1rem;width:100%;">Devam Et</button>
+  </div>
+</div>
+
+<!-- ===================== WIN ===================== -->
+<div class="screen" id="win-screen">
+  <div class="win-card">
+    <div class="win-glow pulse">TAMAMLANDI</div>
+    <div class="win-title">Efsane.</div>
+    <div class="win-sub">100 bölümün hepsini geçtin.<br>Olmazsa Olmaz ustasısın.</div>
+    <button class="btn-play" onclick="resetAll()" style="max-width:300px;display:block;margin:0 auto;">Yeniden Oyna</button>
+  </div>
+</div>
+
+<script>
+const QS = [
+  {level:1,cat:"Evde Olmazsa Olmaz",type:"2secenek",q:"Evde olmazsa olmaz — hangisi?",choices:["Peçete","Sigara"],correct:0,tip:"Peçete günlük kullanımda olmazsa olmaz."},
+  {level:2,cat:"Evde Olmazsa Olmaz",type:"2secenek",q:"Banyo dolabında olmazsa olmaz:",choices:["Diş fırçası","Parfüm"],correct:0,tip:"Diş fırçası temel hijyen gereçidir."},
+  {level:3,cat:"Evde Olmazsa Olmaz",type:"2secenek",q:"Mutfakta olmadan yemek yapamazsın:",choices:["Tencere","Fırın"],correct:0,tip:"Tencere olmadan temel pişirme yapılamaz."},
+  {level:4,cat:"Arabada Olmazsa Olmaz",type:"2secenek",q:"Arabada mutlaka bulunması gereken:",choices:["Step-ne","Çakmak"],correct:0,tip:"Step-ne (yedek lastik) zorunlu güvenlik ekipmanıdır."},
+  {level:5,cat:"Arabada Olmazsa Olmaz",type:"2secenek",q:"Sürüşte olmazsa olmaz belge:",choices:["Ehliyet","Nüfus cüzdanı"],correct:0,tip:"Ehliyet olmadan araç sürmek yasadışıdır."},
+  {level:6,cat:"Tatilde Olmazsa Olmaz",type:"2secenek",q:"Tatile giderken çantana ilk ne girer?",choices:["Kimlik/Pasaport","Şapka"],correct:0,tip:"Kimlik olmadan seyahat edemezsin."},
+  {level:7,cat:"Tatilde Olmazsa Olmaz",type:"2secenek",q:"Deniz tatilinde olmazsa olmaz:",choices:["Güneş kremi","Takı"],correct:0,tip:"Güneş kremi cilt sağlığı için şarttır."},
+  {level:8,cat:"Ofiste Olmazsa Olmaz",type:"2secenek",q:"Ofiste çalışırken olmadan olmaz:",choices:["Bilgisayar","Baskı makinesi"],correct:0,tip:"Günümüzde ofis işi bilgisayarsız düşünülemez."},
+  {level:9,cat:"Okulda Olmazsa Olmaz",type:"2secenek",q:"Okula giderken çantada olmadan olmaz:",choices:["Kalem","Silgi"],correct:0,tip:"Kalem, yazmak için en temel araçtır."},
+  {level:10,cat:"Çantada Olmazsa Olmaz",type:"2secenek",q:"Dışarı çıkarken çantada mutlaka:",choices:["Telefon","Ajanda"],correct:0,tip:"Telefon iletişim ve navigasyon için şarttır."},
+  {level:11,cat:"Mutfakta Olmazsa Olmaz",type:"4secenek",q:"Mutfakta olmadan yemek yapılamaz, hangisi en temel?",choices:["Tuz","Bıçak","Tahta kaşık","Fırın eldiveni"],correct:1,tip:"Bıçak, hazırlık için en temel araçtır."},
+  {level:12,cat:"Yemek Masasında",type:"4secenek",q:"Yemek masasında serviste olmazsa olmaz:",choices:["Çiçek","Çatal-kaşık","Mum","Masa örtüsü"],correct:1,tip:"Çatal-kaşık olmadan yemek yenilmez."},
+  {level:13,cat:"Kafede Olmazsa Olmaz",type:"4secenek",q:"Kafe açmak istiyorsun, hangisi olmadan açamazsın?",choices:["WiFi şifresi","Kahve makinesi","Müzik sistemi","Dekor bitkisi"],correct:1,tip:"Kafenin olmazsa olmazı kahve makinesidir."},
+  {level:14,cat:"Buzdolabında",type:"4secenek",q:"Buzdolabında her zaman bulunması gereken:",choices:["Kola","Yumurta","Dondurma","Enerji içeceği"],correct:1,tip:"Yumurta, hızlı yemek için en temel malzemedir."},
+  {level:15,cat:"AVM'de Olmazsa Olmaz",type:"4secenek",q:"AVM'de olmazsa olmaz yer:",choices:["Sinema","Tuvalet","Oyun salonu","Kuyumcu"],correct:1,tip:"Tuvalet olmadan AVM işletemezsin."},
+  {level:16,cat:"Uçakta Olmazsa Olmaz",type:"4secenek",q:"Uçak yolculuğunda olmadan gidemezsin:",choices:["Uyku bandı","Boarding pass","Boyun yastığı","Kulaklık"],correct:1,tip:"Boarding pass olmadan uçağa binemezsin."},
+  {level:17,cat:"Trende Olmazsa Olmaz",type:"4secenek",q:"Uzun tren yolculuğunda olmazsa olmaz:",choices:["Kitap","Bilet","Şarjlı powerbank","Sandviç"],correct:1,tip:"Bilet olmadan trene binemezsin."},
+  {level:18,cat:"Hastanede Olmazsa Olmaz",type:"4secenek",q:"Hastaneye gittiğinde olmadan muayene olamazsın:",choices:["Çiçek","TC Kimlik","Simit","Terlik"],correct:1,tip:"TC kimlik olmadan sisteme kayıt yapılmaz."},
+  {level:19,cat:"Restoranda Olmazsa Olmaz",type:"4secenek",q:"Restoran açmak için en temel gereksinim:",choices:["Canlı müzik","İzin belgesi","Açık büfe","Kamera sistemi"],correct:1,tip:"İzin belgesi olmadan restoran açamazsın."},
+  {level:20,cat:"Kantinde Olmazsa Olmaz",type:"4secenek",q:"Okul kantininde olmazsa olmaz ürün:",choices:["Konsol","Su","Slime","Kutu oyunu"],correct:1,tip:"Su, kantinde en temel ihtiyaçtır."},
+  {level:21,cat:"Doğru mu Yanlış mı?",type:"dogru_yanlis",q:"Öğretmen olmadan da sınıfta ders işlenebilir.",correct:false,tip:"Öğretmen sınıfın olmazsa olmazıdır."},
+  {level:22,cat:"Doğru mu Yanlış mı?",type:"dogru_yanlis",q:"Zeytinyağı, Türk mutfağının olmazsa olmazıdır.",correct:true,tip:"Zeytinyağı Akdeniz ve Türk mutfağının temelidir."},
+  {level:23,cat:"Doğru mu Yanlış mı?",type:"dogru_yanlis",q:"Bir ofiste internet bağlantısı olmadan verimli çalışılabilir.",correct:false,tip:"Günümüz ofis işi internet gerektiriyor."},
+  {level:24,cat:"Doğru mu Yanlış mı?",type:"dogru_yanlis",q:"Toplu taşımada bilet zorunludur.",correct:true,tip:"Bilet olmadan toplu taşıma kullanılamaz."},
+  {level:25,cat:"Doğru mu Yanlış mı?",type:"dogru_yanlis",q:"Reçetesiz ilaç almak her zaman güvenlidir.",correct:false,tip:"Reçetesiz ilaç kullanımı tehlikeli olabilir."},
+  {level:26,cat:"Aşçılık",type:"4secenek",q:"'Mise en place' ne demektir?",choices:["Yemeği sunmak","Her şeyi hazırda bulundurmak","Ateşi kısmak","Sosu koyulaştırmak"],correct:1,tip:"Mise en place: pişirmeye başlamadan önce her şeyin hazır edilmesi."},
+  {level:27,cat:"Tıp",type:"4secenek",q:"Triaj nedir?",choices:["Ameliyat sonrası bakım","Hastaların aciliyete göre sıralanması","İlaç hazırlama","Kan testi"],correct:1,tip:"Triaj: acil serviste hastaya öncelik sırası verilmesi."},
+  {level:28,cat:"Hukuk",type:"4secenek",q:"Vekaletname olmadan yapılamayan işlem:",choices:["Fatura ödemek","Başkası adına noter işlemi","Alışveriş yapmak","Telefon açmak"],correct:1,tip:"Vekaletname, başkası adına hukuki işlem yapma yetkisidir."},
+  {level:29,cat:"Finans",type:"4secenek",q:"IBAN ne için kullanılır?",choices:["Vergi beyanı","Uluslararası banka transferi","Kredi başvurusu","Sigorta poliçesi"],correct:1,tip:"IBAN, uluslararası banka hesap numarasıdır."},
+  {level:30,cat:"Mimarlık",type:"4secenek",q:"İskan belgesi ne anlama gelir?",choices:["Bina yıkım izni","Binada oturulabilir olduğunun onayı","İnşaat ruhsatı","Deprem raporu"],correct:1,tip:"İskan (yapı kullanma izni) binada yaşanabileceğini belgeler."},
+  {level:31,cat:"Bilişim",type:"4secenek",q:"SSL sertifikası ne için zorunludur?",choices:["Sunucu hızı","Güvenli web sitesi","Veritabanı yedek","Yazılım lisansı"],correct:1,tip:"SSL, web sitesinde güvenli veri iletimi sağlar."},
+  {level:32,cat:"Havacılık",type:"4secenek",q:"Pilotun uçuş öncesi mutlaka yapması gereken:",choices:["Yolcu selamlama","Preflight check","Yemek siparişi","Cockpit temizliği"],correct:1,tip:"Preflight check uçak güvenliği için zorunludur."},
+  {level:33,cat:"Cerrahi",type:"dogru_yanlis",q:"Ameliyatta steril alan sağlanmadan operasyon yapılabilir.",correct:false,tip:"Steril alan, enfeksiyonu önlemek için zorunludur."},
+  {level:34,cat:"Fotoğrafçılık",type:"dogru_yanlis",q:"Diyafram, pozlamayı etkileyen temel bir unsurdur.",correct:true,tip:"Diyafram, lensten geçen ışık miktarını kontrol eder."},
+  {level:35,cat:"Finans",type:"dogru_yanlis",q:"Bilanço olmadan bir şirketin mali durumu tam anlaşılabilir.",correct:false,tip:"Bilanço, şirketin mali resmini gösteren zorunlu belgedir."},
+  {level:36,cat:"Yapay Zeka",type:"4secenek",q:"Derin öğrenmede geri yayılımın (backpropagation) amacı:",choices:["Veriyi temizlemek","Ağırlıkları güncellemek","Modeli sıkıştırmak","Test verisi oluşturmak"],correct:1,tip:"Backpropagation, hatayı geriye yayarak ağırlıkları optimize eder."},
+  {level:37,cat:"Genetik",type:"dogru_yanlis",q:"CRISPR-Cas9, DNA'yı belirli bir noktadan kesmeye yarar.",correct:true,tip:"CRISPR-Cas9, gen düzenlemenin devrimci bir aracıdır."},
+  {level:38,cat:"Kuantum Fiziği",type:"dogru_yanlis",q:"Schrödinger denklemi, kuantum sisteminin zaman evrimini tanımlar.",correct:true,tip:"Schrödinger denklemi kuantum mekaniğinin temel denklemlerinden biridir."},
+  {level:39,cat:"Kriptografi",type:"dogru_yanlis",q:"Asimetrik şifrelemede özel anahtar asla paylaşılmamalıdır.",correct:true,tip:"Özel anahtarın gizliliği, asimetrik şifrelemenin güvenliğinin temelidir."},
+  {level:40,cat:"Felsefe",type:"dogru_yanlis",q:"Kant'a göre kategorik imperatif, koşulsuz ahlaki yükümlülüktür.",correct:true,tip:"Kategorik imperatif, Kant etiğinin temel ilkesidir."},
+  {level:41,cat:"Uzman — Matematik",type:"4secenek",q:"P vs NP problemi hangi alanın temel açık sorusudur?",choices:["Biyoloji","Hesaplama karmaşıklığı teorisi","Kuantum fiziği","Lineer cebir"],correct:1,tip:"P vs NP, bilgisayar biliminin en büyük çözülmemiş problemidir."},
+  {level:42,cat:"Uzman — Felsefe",type:"dogru_yanlis",q:"Gödel'in eksiklik teoremleri, yeterince güçlü her tutarlı formal sistemin kendi tutarlılığını ispatlayamayacağını gösterir.",correct:true,tip:"Bu teorem, matematiğin ve mantığın temel sınırlarını ortaya koyar."},
+  {level:43,cat:"Uzman — Fizik",type:"4secenek",q:"Holografik prensip neyi öne sürer?",choices:["Işığın kütlesi var","3B hacmin bilgisi 2B yüzeyde kodlanabilir","Kara delikler zamanı durdurur","Entropi azalabilir"],correct:1,tip:"Holografik prensip: bir hacmin tüm bilgisi sınır yüzeyinde kodlanmıştır."},
+  {level:44,cat:"Efsane — Matematik",type:"4secenek",q:"Monad nedir (kategori teorisinde)?",choices:["Sayı kümesi","Endofunctor + iki doğal dönüşüm","Sonsuz döngü","Topolojik uzay"],correct:1,tip:"Monad: T endofunktörü, birim η ve çarpım μ doğal dönüşümlerinden oluşur."},
+  {level:45,cat:"Efsane — Matematik",type:"dogru_yanlis",q:"Perelman, Ricci akışı kullanarak Poincaré sanısını ispat etti.",correct:true,tip:"Bu ispat, Milenyum Problemi'nin tek çözümüdür. Perelman ödülü reddetti."},
+  {level:46,cat:"Efsane",type:"4secenek",q:"AdS/CFT dualitesi neyi eşleştirir?",choices:["İki kuantum alan teorisini","Anti-de Sitter uzay ile konformal alan teorisini","Kara delikleri nötron yıldızlarıyla","Renk kuvvetini zayıf kuvvetle"],correct:1,tip:"AdS/CFT (Maldacena dualitesi), kütleçekimi teorisini sınır QFT ile eşleştirir."},
+  {level:47,cat:"Efsane — Fizik",type:"dogru_yanlis",q:"Yang-Mills varlık ve düzgünlük problemi hâlâ çözülmemiş bir Milenyum Problemi'dir.",correct:true,tip:"Clay Enstitüsü'nün 7 probleminden biri — ödülü hâlâ verilmedi."},
+  {level:48,cat:"Efsane — Matematik",type:"4secenek",q:"Langlands programı hangi iki alanı birbirine bağlar?",choices:["Biyoloji-Fizik","Sayı teorisi-Temsil teorisi","Kimya-Matematik","Topoloji-Geometri"],correct:1,tip:"Langlands, galois grupları ile otomorfik formları ilişkilendirir."},
+  {level:49,cat:"Efsane",type:"dogru_yanlis",q:"Bekenstein-Hawking entropisi kara deliğin olay ufku alanıyla orantılıdır.",correct:true,tip:"S = A/4 formülü, kara delik termodinamiğinin temelidir."},
+  {level:50,cat:"Efsane — Son",type:"dogru_yanlis",q:"Bir problemi çözüyor olmak, onu anlamış olmak anlamına gelir.",correct:false,tip:"Feynman: 'Anlamadığını öğretemezsin.' Çözüm taklidi, derin anlayışı gerektirmez."},
+];
+
+let S = {level:1,streak:0,best:1,games:0,checkpoint:1};
+try{ const d=localStorage.getItem('oo_v2'); if(d) S={...S,...JSON.parse(d)}; }catch(e){}
+const save=()=>{ try{localStorage.setItem('oo_v2',JSON.stringify(S));}catch(e){} };
+
+function getQ(l){ return QS.find(q=>q.level===l)||QS[QS.length-1]; }
+
+function getTier(l){
+  if(l<=10)  return {label:'Kolay',   color:'#c8f55a', bg:'rgba(200,245,90,0.15)'};
+  if(l<=20)  return {label:'Orta',    color:'#ffd166', bg:'rgba(255,209,102,0.15)'};
+  if(l<=35)  return {label:'Zor',     color:'#f4845f', bg:'rgba(244,132,95,0.15)'};
+  if(l<=50)  return {label:'Uzman',   color:'#e63946', bg:'rgba(230,57,70,0.15)'};
+  return           {label:'Efsane',  color:'#9b72cf', bg:'rgba(155,114,207,0.15)'};
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateHome(){
+  document.getElementById('h-best').textContent = S.best;
+  document.getElementById('h-games').textContent = S.games;
+  document.getElementById('h-cur').textContent = S.level;
+}
+
+function startGame(){
+  S.games++;
+  save();
+  show('game');
+  renderQ();
+}
+
+function renderQ(){
+  const q = getQ(S.level);
+  const tier = getTier(S.level);
+
+  document.getElementById('g-lvl').textContent = S.level;
+  document.getElementById('g-progress').style.width = S.level + '%';
+  document.getElementById('g-cat').textContent = q.cat;
+  document.getElementById('g-streak').textContent = S.streak;
+  document.getElementById('g-question').textContent = q.q;
+
+  const badge = document.getElementById('g-tier-badge');
+  badge.textContent = tier.label;
+  badge.style.color = tier.color;
+  badge.style.background = tier.bg;
+  badge.style.border = '1px solid ' + tier.color + '33';
+
+  const labels = {'2secenek':'2 seçenek', '4secenek':'4 seçenek', 'dogru_yanlis':'Doğru / Yanlış'};
+  document.getElementById('g-qtype').textContent = labels[q.type] || q.type;
+
+  const fb = document.getElementById('g-feedback');
+  fb.className = 'feedback-box';
+  fb.innerHTML = '';
+
+  const area = document.getElementById('g-choices');
+  area.innerHTML = '';
+  const isTwoCol = q.type === '2secenek' || q.type === 'dogru_yanlis';
+  area.className = 'choices-grid' + (isTwoCol ? ' two-col' : '');
+
+  let opts = [];
+  if(q.type==='dogru_yanlis') opts = [{label:'Doğru',correct:true},{label:'Yanlış',correct:false}];
+  else {
+    opts = q.choices.map((c,i)=>({label:c, correct:i===q.correct}));
+    for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+  }
+
+  const idxLabels = ['A','B','C','D'];
+  opts.forEach((opt,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    const idx = q.type!=='2secenek'&&q.type!=='dogru_yanlis' ? `<span class="choice-index">${idxLabels[i]}</span>` : '';
+    btn.innerHTML = idx + opt.label;
+    btn.onclick = () => handleAns(opt.correct, q.tip, btn, area);
+    area.appendChild(btn);
+  });
+
+  area.style.opacity='0';
+  area.style.transform='translateY(10px)';
+  requestAnimationFrame(()=>{
+    area.style.transition='opacity 0.3s ease, transform 0.3s ease';
+    area.style.opacity='1';
+    area.style.transform='translateY(0)';
+  });
+}
+
+function handleAns(correct, tip, btn, area){
+  area.querySelectorAll('.choice-btn').forEach(b=>{b.disabled=true; b.onclick=null;});
+  const fb = document.getElementById('g-feedback');
+  if(correct){
+    btn.classList.add('correct');
+    fb.className='feedback-box correct';
+    fb.innerHTML='<span class="fb-icon">✓</span>' + tip;
+    S.streak++; S.level++;
+    if(S.level>S.best) S.best=S.level;
+    save();
+    if(S.level>50){ show('win-screen'); return; }
+    setTimeout(()=>renderQ(), 1500);
+  } else {
+    btn.classList.add('wrong');
+    fb.className='feedback-box wrong';
+    fb.innerHTML='<span class="fb-icon">✕</span>' + tip;
+    S.checkpoint = S.level; S.streak=0; save();
+    setTimeout(()=>showAd(), 1600);
+  }
+}
+
+let adIv=null;
+function showAd(){
+  show('ad-screen');
+  document.getElementById('ad-msg').textContent = S.level + '. bölümde elendin.';
+  const r=document.getElementById('btn-restart'), c=document.getElementById('btn-continue');
+  r.disabled=c.disabled=true;
+  let t=5;
+  document.getElementById('ad-t').textContent=t;
+  document.getElementById('ad-bar').style.width='0%';
+  if(adIv) clearInterval(adIv);
+  adIv=setInterval(()=>{
+    t--;
+    document.getElementById('ad-t').textContent=t;
+    document.getElementById('ad-bar').style.width=Math.round((5-t)/5*100)+'%';
+    if(t<=0){ clearInterval(adIv); r.disabled=c.disabled=false; }
+  },1000);
+}
+
+function doRestart(){ S.level=1; S.streak=0; save(); updateHome(); show('home'); }
+
+function goAd2(){
+  show('ad2-screen');
+  const d=document.getElementById('btn-ad2-done'); d.disabled=true;
+  let t=5;
+  document.getElementById('ad2-t').textContent=t;
+  document.getElementById('ad2-bar').style.width='0%';
+  if(adIv) clearInterval(adIv);
+  adIv=setInterval(()=>{
+    t--;
+    document.getElementById('ad2-t').textContent=t;
+    document.getElementById('ad2-bar').style.width=Math.round((5-t)/5*100)+'%';
+    if(t<=0){ clearInterval(adIv); d.disabled=false; }
+  },1000);
+}
+
+function continueFromCheckpoint(){ S.level=S.checkpoint; S.streak=0; save(); show('game'); renderQ(); }
+
+function resetAll(){ S={level:1,streak:0,best:1,games:0,checkpoint:1}; save(); updateHome(); show('home'); }
+
+updateHome();
+</script>
+</body>
+</html>
